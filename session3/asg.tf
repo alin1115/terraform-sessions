@@ -1,13 +1,9 @@
 resource "aws_launch_configuration" "example" {
+    name_prefix     = "first-lc"
     image_id        = var.ami_id
     instance_type   = var.instance_type
     security_groups = [aws_security_group.first_sg.id]
-    user_data       = <<-EOF
-            #!/bin/bash
-            yum install httpd -y
-            echo "Hello from ${var.name}" >> /var/www/html/index.html
-            systemctl start httpd
-            EOF
+    user_data       = data.template_file.user_data.rendered
     root_block_device {
         delete_on_termination = true
     }
@@ -18,9 +14,10 @@ resource "aws_launch_configuration" "example" {
 }
 
 resource "aws_autoscaling_group" "example" {
+    name                 = aws_launch_configuration.example.name
     launch_configuration = aws_launch_configuration.example.name
-    min_size             = 3
-    max_size             = 3
+    min_size             = var.asg_min
+    max_size             = var.asg_max
     vpc_zone_identifier  = data.aws_subnet_ids.default.ids
     target_group_arns    = [aws_lb_target_group.alb_tg.arn]
     health_check_type    = "ELB"
@@ -36,6 +33,9 @@ resource "aws_autoscaling_group" "example" {
             propagate_at_launch = true
         }
     ]
+    lifecycle {
+        create_before_destroy = true
+    }
 }
 
 resource "aws_security_group" "first_sg" {
@@ -46,6 +46,12 @@ resource "aws_security_group" "first_sg" {
       protocol    = "tcp"
       security_groups = [aws_security_group.alb_sg.id]
   }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 data "aws_vpc" "default" {
@@ -54,4 +60,12 @@ data "aws_vpc" "default" {
 
 data "aws_subnet_ids" "default" {
     vpc_id = data.aws_vpc.default.id
+}
+
+data "template_file" "user_data" {
+    template = file("user-data.sh")
+    vars = {
+        name = var.name
+        greeting = var.greet
+    }
 }

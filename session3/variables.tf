@@ -26,3 +26,7 @@ variable "asg_max" {
   default = "1"
   description = "Maximum number if instances for autoscaling group"
 }
+
+variable "greet" {
+  default = "Hello"
+}
