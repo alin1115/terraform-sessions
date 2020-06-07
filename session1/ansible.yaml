@@ -1,0 +1,4 @@
+- ec2:
+    count: 2
+    image: ami-0affd4508a5d2481b
+    insttance_type: t2.micro
