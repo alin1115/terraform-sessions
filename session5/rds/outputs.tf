@@ -8,3 +8,4 @@ output "db_endpoint" {
 output "db_user" {
     value = aws_db_instance.demo_db_instance.username
 }
+

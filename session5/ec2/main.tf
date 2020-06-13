@@ -37,3 +37,4 @@ data "template_file" "user_data" {
         greeting = var.greet
     }
 }
+

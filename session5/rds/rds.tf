@@ -37,3 +37,26 @@ resource "aws_db_instance" "demo_db_instance" {
   skip_final_snapshot = var.skip_final_snapshot
   final_snapshot_identifier = var.skip_final_snapshot == true ? null : format("%s-%s", "rds-snap", formatdate("DD-MMM-YYYY-hh-mmZZZ", timestamp()))
 }
+
+data "template_file" "sql_table" {
+  template = file("table.sql")
+  vars = {
+    db = replace("rds-users-1", "-", "_")
+  }
+}
+
+resource "null_resource" "db_table" {
+  triggers = {
+    tt = trimspace(file("table.sql"))
+    #tt = timestamp()
+  }
+  depends_on = [aws_db_instance.demo_db_instance]
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      echo "${data.template_file.sql_table.rendered}" > run.sql
+      mysql -h "${aws_db_instance.demo_db_instance.address}" -u "${aws_db_instance.demo_db_instance.username}" -p"${random_password.demo_password.result}" < "run.sql" 
+      rm -rf run.sql
+    EOF
+  }
+}
