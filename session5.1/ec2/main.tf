@@ -13,7 +13,7 @@ resource "aws_instance" "example" {
   vpc_security_group_ids = [aws_security_group.first_sg.id]
 
   provisioner "file" {
-    content      = data.template_file.index.rendered
+    content     = data.template_file.index.rendered
     destination = "/tmp/index.html"
 
     connection {
@@ -23,6 +23,24 @@ resource "aws_instance" "example" {
       private_key = file("/Users/aisuluuomokoeva/.ssh/id_rsa")
     }
   }
+
+  provisioner "remote-exec" {
+
+    inline = [
+      "sudo yum install httpd -y",
+      "sudo mv /tmp/index.html /var/www/html/index.html",
+      "sudo systemctl enable httpd",
+      "sudo systemctl start httpd"
+    ]
+
+    connection {
+      type     = "ssh"
+      user     = "centos"
+      host     = self.public_ip
+      private_key = file("/Users/aisuluuomokoeva/.ssh/id_rsa")
+    }
+  }
+
 }
 
 resource "aws_key_pair" "key" {
