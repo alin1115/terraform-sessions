@@ -3,7 +3,7 @@ variable "name" {
 }
 
 variable "greet" {
-    default = "Hi"
+    default = "Hello"
 }
 
 variable "webserver_port" {

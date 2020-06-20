@@ -13,8 +13,8 @@ resource "aws_instance" "example" {
   vpc_security_group_ids = [aws_security_group.first_sg.id]
 
   provisioner "file" {
-    source      = "index.html"
-    destination = "/tmp"
+    content      = data.template_file.index.rendered
+    destination = "/tmp/index.html"
 
     connection {
       type     = "ssh"
@@ -38,6 +38,12 @@ resource "aws_security_group" "first_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -46,11 +52,10 @@ resource "aws_security_group" "first_sg" {
   }
 }
 
-# data "template_file" "user_data" {
-#     template = file("user-data.sh")
-#     vars = {
-#         name = var.name
-#         greeting = var.greet
-#     }
-# }
+data "template_file" "index" {
+    template = file("index.sh")
+    vars = {
+        greeting = var.greet
+    }
+}
 

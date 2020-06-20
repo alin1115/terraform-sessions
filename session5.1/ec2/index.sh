@@ -1,0 +1,1 @@
+${greeting}, this file was copied using file provisioner
