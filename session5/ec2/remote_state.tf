@@ -1,7 +1,7 @@
 data "terraform_remote_state" "rds" {
     backend = "s3"
     config = {
-        bucket = "akumo-terraform101-state"
+        bucket = "akumo-terraform101-state20"
         key = "session4/rds.tfstate"
         region = "us-east-1"
         profile = "terraform"
